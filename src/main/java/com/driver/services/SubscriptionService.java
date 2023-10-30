@@ -28,36 +28,35 @@ public class SubscriptionService {
     public Integer buySubscription(SubscriptionEntryDto subscriptionEntryDto){
 
         //Save The subscription Object into the Db and return the total Amount that user has to pay
-        int userId=subscriptionEntryDto.getUserId();
-        User user=userRepository.findById(userId).get();
-        int subscriptionFee=0;
-        int screenFee=0;
-        switch(subscriptionEntryDto.getSubscriptionType()){
+        Integer numberOfScreen=subscriptionEntryDto.getNoOfScreensRequired();
+        Integer totalAmount=0;
 
-            case BASIC:
-                subscriptionFee=500;
-                screenFee=200;
-                break;
-            case PRO:
-                subscriptionFee=800;
-                screenFee=250;
-                break;
-            case ELITE:
-                subscriptionFee=1000;
-                screenFee=350;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + subscriptionEntryDto.getSubscriptionType());
-        }
-        screenFee=screenFee*subscriptionEntryDto.getNoOfScreensRequired();
-        int totalAmountPaid=subscriptionFee+screenFee;
-        Subscription subscription=new Subscription();
+        User user=userRepository.findById(subscriptionEntryDto.getUserId()).get();
+
+
+        Subscription subscription= new Subscription();
         subscription.setSubscriptionType(subscriptionEntryDto.getSubscriptionType());
-        subscription.setStartSubscriptionDate(Calendar.getInstance().getTime());
-        subscription.setTotalAmountPaid(totalAmountPaid);
+
+        if(subscriptionEntryDto.getSubscriptionType().toString().equals("BASIC")){
+            Integer amountWithNoOfScreenAmount=500+(200*numberOfScreen);
+            totalAmount=amountWithNoOfScreenAmount;
+
+        } else if (subscriptionEntryDto.getSubscriptionType().toString().equals("PRO")) {
+            Integer amountWithNoOfScreenAmount=800+(250*numberOfScreen);
+            totalAmount=amountWithNoOfScreenAmount;
+
+        }else {
+            Integer amountWithNoOfScreenAmount=1000+(350*numberOfScreen);
+            totalAmount=amountWithNoOfScreenAmount;
+        }
+
         subscription.setUser(user);
+        subscription.setTotalAmountPaid(totalAmount);
+        subscription.setNoOfScreensSubscribed(numberOfScreen);
+
         user.setSubscription(subscription);
-        return totalAmountPaid;
+
+        return totalAmount;
     }
 
     public Integer upgradeSubscription(Integer userId)throws Exception{
