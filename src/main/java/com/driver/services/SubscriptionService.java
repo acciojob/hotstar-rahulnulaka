@@ -66,34 +66,26 @@ public class SubscriptionService {
         //In all other cases just try to upgrade the subscription and tell the difference of price that user has to pay
         //update the subscription in the repository
         User user=userRepository.findById(userId).get();
-        Subscription subscription=user.getSubscription();
-        if(subscription.getSubscriptionType().toString().equals("ELITE"))
+        if(user.getSubscription().getSubscriptionType().toString().equals("ELITE")){
             throw new Exception("Already the best Subscription");
-        SubscriptionType subscriptionType=subscription.getSubscriptionType();
-        int noofscreens=subscription.getNoOfScreensSubscribed();
-        SubscriptionType newSubscriptionType=null;
-        int subscriptionFee=0;
-        int screenFee=0;
-        switch(subscriptionType){
-
-            case BASIC:
-                newSubscriptionType=SubscriptionType.PRO;
-                subscriptionFee=800;
-                screenFee=250;
-                break;
-            case PRO:
-                newSubscriptionType=SubscriptionType.ELITE;
-                subscriptionFee=1000;
-                screenFee=350;
-                break;
         }
-        int totalAmount=subscriptionFee+(screenFee*noofscreens);
-        int oldAmount=subscription.getTotalAmountPaid();
-        subscription.setSubscriptionType(newSubscriptionType);
-        subscription.setTotalAmountPaid(totalAmount);
+
+        Subscription subscription=user.getSubscription();
+        Integer previousFair=subscription.getTotalAmountPaid();
+        Integer currentFair;
+        if(subscription.getSubscriptionType().equals(SubscriptionType.BASIC)){
+            subscription.setSubscriptionType(SubscriptionType.PRO);
+            currentFair =previousFair+300+(50*subscription.getNoOfScreensSubscribed());
+        }else {
+            subscription.setSubscriptionType(SubscriptionType.ELITE);
+            currentFair=previousFair+200+(100*subscription.getNoOfScreensSubscribed());
+        }
+
+        subscription.setTotalAmountPaid(currentFair);
         user.setSubscription(subscription);
         subscriptionRepository.save(subscription);
-        return totalAmount-oldAmount;
+
+        return currentFair-previousFair;
     }
 
     public Integer calculateTotalRevenueOfHotstar(){
