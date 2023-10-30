@@ -57,7 +57,6 @@ public class SubscriptionService {
         subscription.setTotalAmountPaid(totalAmountPaid);
         subscription.setUser(user);
         user.setSubscription(subscription);
-        subscriptionRepository.save(subscription);
         return totalAmountPaid;
     }
 
